@@ -4,8 +4,8 @@ require 'vendor/autoload.php';
 
 include_once "db.php";
 
-use  PHPMailer\PHPMailer\PHPMailer;
-use  PHPMailer\PHPMailer\Exception;
+// use  PHPMailer\PHPMailer\PHPMailer;
+// use  PHPMailer\PHPMailer\Exception;
 use  Endroid\QrCode\Builder\Builder;
 use  Endroid\QrCode\Writer\PngWriter;
 
@@ -26,7 +26,7 @@ class VisitorController{
         $qr_data = json_encode([
            "visitor_code" => $visitor_code
         ]);
-
+        //{"visitor_code" : "SHAOXI_27092024"}
         // 生成 QR Code
         $qrCode = Builder::create()
             ->writer(new PngWriter())
@@ -201,6 +201,58 @@ class VisitorController{
 
         return $result;
     }
+
+    public function getVisitorsID($visitor_id){
+         // 准备查询语句
+         $stmt = $this->conn->prepare("SELECT * FROM visitors WHERE id = ?");
+         if (!$stmt) {
+             // 如果预处理失败，输出错误信息并返回 false
+             echo "SQL prepare failed: (" . $this->conn->errno . ") " . $this->conn->error;
+             return false;
+         }
+ 
+         // 绑定参数
+         $stmt->bind_param("i", $owner_id);
+         $stmt->execute();
+ 
+         // 获取查询结果
+         $result = $stmt->get_result();
+ 
+         if (!$result) {
+             // 如果获取结果失败，输出错误信息并返回 false
+             echo "Execute failed: (" . $stmt->errno . ") " . $stmt->error;
+             return false;
+         }
+ 
+         // 返回查询结果
+         return $result;
+    }
+
+    public function UpdateVisitor($visitor_id,$name, $IC, $email, $phone, $visitor_code, $visit_date, $status, $owner_id, $valid_days){
+        // 设置二维码过期日期
+        $expiration_time = strtotime($visit_date . ' +' . $valid_days . ' days');
+
+        // QR Code 数据信息
+        $qr_data = json_encode([
+           "visitor_code" => $visitor_code
+        ]);
+        //{"visitor_code" : "SHAOXI_27092024"}
+        // 生成 QR Code
+        $qrCode = Builder::create()
+            ->writer(new PngWriter())
+            ->data($qr_data)
+            ->size(300)
+            ->margin(10)
+            ->build();
+
+        // 设置 QR Code 文件名和路径
+        $filePath = '../qrcodes/' .$visitor_code. '.png';
+        $qrCode->saveToFile($filePath);
+
+        //$stmt = $this->conn->prepare('Update visitors set name =?, IC =?, email =?, phone =?, visitor_code = ?, qr_code = ?, visit_date = ?, status = ?, owner_id = ?, valid_days = ? where id = ?')
+    }
+
+ 
 
 }
 

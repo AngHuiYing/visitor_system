@@ -36,7 +36,7 @@ $result = $Visitor->getVisitors($owner_id);
                         <th>Visitor Name</th>
                         <th>Visit Date</th>
                         <th>QR Code</th>
-                        <!-- 添加更多列根据你的需求 -->
+                        <th colspan=2>Action</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -48,6 +48,10 @@ $result = $Visitor->getVisitors($owner_id);
                                 <td>
                                     <a href="view_qrcode.php?visitor_id=<?php echo htmlspecialchars($row['id']); ?>" class="btn btn-primary btn-sm">
                                         View QR Code
+                                    </a>
+                                </td><td>
+                                    <a href="update_visitor_date.php?visitor_id=<?php echo htmlspecialchars($row['id']); ?>" class="btn btn-primary btn-sm">
+                                        Change Visit Date
                                     </a>
                                 </td>
                                 <!-- 可以根据需求添加更多数据 -->
