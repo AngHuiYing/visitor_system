@@ -25,6 +25,9 @@
                 <li class="nav-item">
                     <a class="nav-link" href="owner.php">Owner List</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../QRCodeVerify.php">Scan QR</a>
+                </li>
             </ul>
 
             <ul class="navbar-nav ml-auto">

@@ -6,8 +6,15 @@ include_once "db.php";
 
 // use  PHPMailer\PHPMailer\PHPMailer;
 // use  PHPMailer\PHPMailer\Exception;
-use  Endroid\QrCode\Builder\Builder;
-use  Endroid\QrCode\Writer\PngWriter;
+use Endroid\QrCode\Color\Color;
+use Endroid\QrCode\Encoding\Encoding;
+use Endroid\QrCode\ErrorCorrectionLevel;
+use Endroid\QrCode\QrCode;
+use Endroid\QrCode\Label\Label;
+use Endroid\QrCode\Logo\Logo;
+use Endroid\QrCode\RoundBlockSizeMode;
+use Endroid\QrCode\Writer\PngWriter;
+use Endroid\QrCode\Writer\ValidationException;
 
 
 class VisitorController{
@@ -18,60 +25,18 @@ class VisitorController{
         $this->conn = $db->getConnection();
     }
 
-    public function ApplyVisitor($name, $IC, $email, $phone, $visitor_code, $visit_date, $status, $owner_id, $valid_days){
-        // 设置二维码过期日期
-        $expiration_time = strtotime($visit_date . ' +' . $valid_days . ' days');
-
-        // QR Code 数据信息
-        $qr_data = json_encode([
-           "visitor_code" => $visitor_code
-        ]);
-        //{"visitor_code" : "SHAOXI_27092024"}
-        // 生成 QR Code
-        $qrCode = Builder::create()
-            ->writer(new PngWriter())
-            ->data($qr_data)
-            ->size(300)
-            ->margin(10)
-            ->build();
-
-        // 设置 QR Code 文件名和路径
-        $filePath = '../qrcodes/' .$visitor_code. '.png';
-        $qrCode->saveToFile($filePath);
-
-        $stmt = $this->conn->prepare("SELECT COUNT(*) FROM visitors WHERE visitor_code = ?");
-        $stmt->bind_param("s", $visitor_code);
-        $stmt->execute();
-        $stmt->bind_result($count);
-        $stmt->fetch();
-        $stmt->close();
-
-        if ($count > 0) {
-            echo "Error: Visitor code already exists.";
-            return;
-        }else{
-
-            // 插入访客数据
-            $stmt = $this->conn->prepare("INSERT INTO visitors (name, IC, email, phone, visitor_code, qr_code, visit_date, status, owner_id, valid_days) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?,?)");
-            $stmt->bind_param("ssssssssss", $name, $IC, $email, $phone, $visitor_code, $filePath, $visit_date, $status, $owner_id, $valid_days);
-            $stmt->execute();
-
-            // 获取插入的访客 ID
-            $visitor_id = $stmt->insert_id;
-            $stmt->close();
-
-            // 插入 QR Code 数据到 qr_codes 表
-            $stmt = $this->conn->prepare("INSERT INTO qr_codes (visitor_id, qr_code, generated_at, expires_at) VALUES (?, ?, ?, ?)");
-            $generated_at = date('Y-m-d H:i:s');
-            $expires_at = date('Y-m-d H:i:s', $expiration_time);
-            $stmt->bind_param("isss", $visitor_id, $visitor_code, $generated_at, $expires_at);
-            $stmt->execute();
-            $stmt->close();
-
-            // 发送电子邮件包含 QR Code
-            // $this->sendEmailWithQRCode($email, $name, $filePath);
+    public function getAllVisitors() {
+        $query = "SELECT name, IC, email, phone, visit_date, valid_days, status FROM visitors";
+        $result = $this->conn->query($query);
+    
+        $visitors = [];
+        if ($result && $result->num_rows > 0) {
+            while ($row = $result->fetch_assoc()) {
+                $visitors[] = $row;
+            }
         }
-    }
+        return $visitors;
+    }    
 
 
     private function sendEmailWithQRCode($email,$name,$filePath){

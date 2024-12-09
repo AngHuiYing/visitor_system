@@ -1,6 +1,9 @@
 <?php
 
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
 
 class Database {
     private $conn;
@@ -8,8 +11,8 @@ class Database {
     public function __construct() {
         $server = "localhost";
         $username = "root";
-        $password = "123qwe";
-        $database = "visitor_system";
+        $password = "";
+        $database = "condo_visitor_system";
 
         $this->conn = mysqli_connect($server, $username, $password, $database);
 

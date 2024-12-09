@@ -2,8 +2,8 @@
 // 数据库连接
 $servername = "localhost";
 $username = "root";
-$password = "123qwe";
-$dbname = "visitor_system"; // 替换为你的数据库名称
+$password = "";
+$dbname = "condo_visitor_system"; // 替换为你的数据库名称
 
 $conn = new mysqli($servername, $username, $password, $dbname);
 

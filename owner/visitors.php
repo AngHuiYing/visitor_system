@@ -31,6 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
 
 <?php include('header.php')?>
 <html>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <?php if (!empty($success)): ?>
         <div class="alert alert-success alert-dismissible fade show" role="alert">
             <strong>Success!</strong> Visitor has been applied successfully!
